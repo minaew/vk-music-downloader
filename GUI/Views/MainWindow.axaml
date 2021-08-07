@@ -1,0 +1,131 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="using:MusicDownloader.Core"
+        xmlns:responcesTypes="using:MusicDownloader.Core.ResponcesTypes"
+        xmlns:vm="using:GUI.ViewModels"
+        xmlns:converters="using:GUI.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="GUI.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="GUI">
+  <Window.Resources>
+    <converters:BitmapAssetValueConverter x:Key="BitmapAssetValueConverter"/>
+    <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
+  </Window.Resources>
+    
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    
+    <StackPanel Orientation="Horizontal">
+      <StackPanel>
+        <TextBlock Text="{Binding Start}"
+                   Margin="5"/>
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Text="{Binding End}"
+                   Margin="5"/>
+      </StackPanel>
+      <Button Content="Load"
+              Command="{Binding Refresh}"/>
+    </StackPanel>
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+    <DataGrid x:Name="MainDataGrid"
+              Items="{Binding Feeds}"
+              AutoGenerateColumns="True">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Fuck you"
+                            Binding="{Binding Date, Converter={StaticResource DateTimeToStringConverter}, Mode=OneWay}">
+        </DataGridTextColumn>
+        <DataGridTemplateColumn>
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <Image Source="{Binding Source.Photo, Converter={StaticResource BitmapAssetValueConverter}}"
+                     Width="50" Height="50"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Tracks">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <ListBox Items="{Binding Audios}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="{Binding Status}"/>
+                      <TextBlock Text="{Binding title}"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+      </DataGrid.Columns>
+    </DataGrid>
+      
+    <ListBox Grid.Column="1"
+             Items="{Binding Feeds}">
+      <ListBox.ItemTemplate>
+        <DataTemplate DataType="{x:Type core:AudioFeed}">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>         
+            
+              <Image Grid.RowSpan="2"
+                     Source="{Binding Source.Photo, Converter={StaticResource BitmapAssetValueConverter}}"
+                     VerticalAlignment="Top"
+                     Width="50" Height="50"/>
+              <TextBlock Grid.Row="0" Grid.Column="1"
+                         Text="{Binding Date, Converter={StaticResource DateTimeToStringConverter}, ConverterParameter=time, Mode=OneWay}"
+                         VerticalAlignment="Center"
+                         Margin="5"/>
+              <TextBlock Grid.Row="0" Grid.Column="2"
+                         Text="{Binding Source.Name}"
+                         VerticalAlignment="Center"
+                         Margin="5"/>
+              <Expander Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                        Header="{Binding Audios.Count}">
+                <ListBox Items="{Binding Audios}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type responcesTypes:Audio}">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Status}"/>
+                        <TextBlock Text="{Binding artist}"/>
+                        <TextBlock Text="{Binding title}"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Expander> 
+            </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+      
+    </ListBox>
+      
+    </Grid>
+  
+  </Grid>
+
+</Window>
