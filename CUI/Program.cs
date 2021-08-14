@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using CommandLine;
@@ -11,22 +12,40 @@ namespace MusicDownloader.CUI
     {
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args).WithParsedAsync(OperateAsync).Wait();
+            Parser.Default.ParseArguments<Options>(args)
+                .WithNotParsed(p => throw new ArgumentException("invalid"))
+                .WithParsedAsync(opt =>            
+                {
+                    switch (opt.Mode)
+                    {
+                        case "post":
+                            return FromPostAsync(opt.GroupId, opt.PostId);
+
+                        case "newsfeed":
+                            return FromNewsFeedAsync(opt.Days, opt.Download, opt.IdsToExclude);
+
+                        default:
+                            return Task.FromResult(0);
+                    }
+                })
+                .Wait();
         }
 
-        private static async Task OperateAsync(Options options)
+        private static async Task FromPostAsync(int groupId, int postId)
         {
             using (var executor = new VkMethodExecutor(FileLogger.Default))
             {
-                var path = await executor.DownloadAudioContenAsync(6827569, 38861);
+                // var path = await executor.DownloadAudioContenAsync(6827569, 38861);
+                var path = await executor.DownloadAudioContenAsync(groupId, postId);
                 Console.WriteLine(path);
             }
+        }
 
-            return;
+        private static async Task FromNewsFeedAsync(int days, bool download, ICollection<int> idsToExclude)
+        {
+            Console.WriteLine($"From {days} ago to now");
 
-            Console.WriteLine($"From {options.Days} ago to now");
-
-            if (options.Download)
+            if (download)
             {
                 Console.WriteLine("With download");
             }
@@ -38,9 +57,9 @@ namespace MusicDownloader.CUI
             using (var executor = new VkMethodExecutor(FileLogger.Default))
             {
                 Console.WriteLine("Getting feeds ...");
-                await foreach (var feed in executor.GetFeedAsync(DateTime.Now - TimeSpan.FromDays(options.Days),
+                await foreach (var feed in executor.GetFeedAsync(DateTime.Now - TimeSpan.FromDays(days),
                                                                 DateTime.Now,
-                                                                options.IdsToExclude))
+                                                                idsToExclude))
                 {
                     Console.Write($"{feed.Status}\t{feed.Date}\t{feed.Id}\t{feed.Audios.Count}\t");
                     Console.Write($"{feed.Source.Id}".PadRight(10));
@@ -50,12 +69,12 @@ namespace MusicDownloader.CUI
                     //{
                     //    Console.WriteLine($"\t{audio.Status}\t{audio.artist}-{audio.title}");
                     //}
-                    if (options.Download)
+                    if (download)
                     {
                         Console.Write("Downloading ...");
                         var sw = new Stopwatch();
                         sw.Start();
-                        await Downloader.DownloadAsync(feed);
+                        Downloader.Download(feed);
                         Console.WriteLine($" in {sw.Elapsed}");
                     }
                 }

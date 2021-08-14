@@ -5,4 +5,5 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>", Scope = "member", Target = "~M:MusicDownloader.Core.VkMethodExecutor.GetFeedAsync(System.DateTime,System.DateTime,System.Collections.Generic.ICollection{System.Int32})~System.Collections.Generic.IAsyncEnumerable{MusicDownloader.Core.AudioFeed}")]
+[assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Scope = "namespace", Target = "~N:MusicDownloader.Core.ResponcesTypes")]
+[assembly: SuppressMessage("HZ", "CA1817", Scope = "namespace", Target = "~N:MusicDownloader.Core.ResponcesTypes")]

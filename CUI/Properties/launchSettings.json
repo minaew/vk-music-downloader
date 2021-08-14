@@ -2,7 +2,7 @@
   "profiles": {
     "CUI": {
       "commandName": "Project",
-      "commandLineArgs": "10 -e6827569"
+      "commandLineArgs": "newsfeed 1"
     }
   }
 }

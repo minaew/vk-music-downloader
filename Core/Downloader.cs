@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -7,7 +6,7 @@ namespace MusicDownloader.Core
 {
     public static class Downloader
     {
-        public static async Task DownloadAsync(AudioFeed audioFeed, bool force = false)
+        public static void Download(AudioFeed audioFeed, bool force = false)
         {
             if (audioFeed == null)
             {
@@ -16,27 +15,38 @@ namespace MusicDownloader.Core
 
             if (audioFeed.Status == CacheStatus.Downloaded && !force) return;
 
-            // download audios
-            var tasks = new List<Task>();
-            foreach (var audio in audioFeed.Audios)
-            {
-                if (audio.Status == CacheStatus.Downloaded && !force) continue;
-                
-                var link = audio.url.Split('?')[0];
+            // TODO: hz, some heuristic
+            var album = audioFeed.Text.Substring(0, 30).Replace("\n", "").Replace("\r", "").Trim();
 
-                var process = Process.Start(new ProcessStartInfo
+            // download audios
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount - 1
+            };
+            var r = Parallel.For(0, audioFeed.Audios.Count, options, index =>
+            {
+                var audio = audioFeed.Audios[index];
+                var processInfo = new ProcessStartInfo
                 {
                     FileName = Settings.FfmpegPath,
-                    Arguments = $"-y -i {link} {audio.Path}",
+                    Arguments = $"-y -i {audio.url}" +
+                                $" -metadata title=\"{audio.title}\"" +
+                                $" -metadata artist=\"{audio.artist}\"" +
+                                $" -metadata album=\"{album}\"" +
+                                $" -metadata track=\"{index + 1}\"" +
+                                $" {audio.Path}",
                     RedirectStandardError = true // чтобы не захламлять консоль
-                });
-                var task = process.StandardError.ReadToEndAsync().ContinueWith(t =>
-                {
-                    process.WaitForExit();
-                });
-                tasks.Add(task);
+                };
+                var process = Process.Start(processInfo);
+                process.StandardError.ReadToEndAsync()
+                    .ContinueWith(t => process.WaitForExit(), TaskScheduler.Current)
+                    .Wait();
+            });
+
+            if (!r.IsCompleted)
+            {
+                throw new Exception("Not completed");
             }
-            await Task.WhenAll(tasks);
         }
     }
 }

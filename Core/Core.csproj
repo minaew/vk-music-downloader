@@ -6,7 +6,9 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-      <NoWarn>2007</NoWarn>
+      <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+      <DefineConstants>DEBUG;TRACE</DefineConstants>
+      <NoWarn>CA2007</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

@@ -3,10 +3,14 @@ using CommandLine;
 
 namespace MusicDownloader.CUI
 {
-#pragma warning disable CA1812 // no instanse
+    internal enum Mode { Post, NewsFeed }
+
     internal class Options
     {
-        [Value(0, HelpText = "interval in days")]
+        [Value(0, HelpText = "mode")]
+        public string Mode { get; set; }
+
+        [Value(1, HelpText = "interval in days")]
         public int Days { get; set; }
 
         [Option('d', Default = false, HelpText = "download audios")]
@@ -17,6 +21,11 @@ namespace MusicDownloader.CUI
 
         [Option('i', "include", HelpText = "Ids to include")]
         public ICollection<int> IdsInclude { get; set; }
+
+        [Option('g', "groupId", HelpText = "Group identificator")]
+        public int GroupId { get; set; }
+
+        [Option('p', "postId", HelpText = "Post identificator")]
+        public int PostId { get; set; }
     }
-#pragma warning restore  CA1812
 }

@@ -6,10 +6,10 @@ namespace MusicDownloader.Core.ResponcesTypes
     {
         public string artist { get; set; }
         public int id { get; set; }
-        public int owner_id { get; set; }
+        // public int owner_id { get; set; }
         public string title { get; set; }
-        public int duration { get; set; }
-        public string access_key { get; set; }
+        // public int duration { get; set; }
+        // public string access_key { get; set; }
         public string url { get; set; }
 
         [JsonIgnore]

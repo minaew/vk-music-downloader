@@ -86,7 +86,7 @@ namespace MusicDownloader.Core
 
             var post = posts.SingleOrDefault();
             var audioFeed = await ProcessPostAsync(post);
-            await Downloader.DownloadAsync(audioFeed, true);
+            Downloader.Download(audioFeed, true);
             _logger.Log($"donloaded in {audioFeed.Location}");
             return audioFeed.Location.FullName;
         }
@@ -264,7 +264,7 @@ namespace MusicDownloader.Core
                 return;
             }
 
-            var imageBytes = await _client.GetByteArrayAsync(group.Photo200);
+            var imageBytes = await _client.GetByteArrayAsync(new Uri(group.Photo200));
 
             Directory.CreateDirectory(groupsCache);
             await File.WriteAllBytesAsync(group.Photo, imageBytes);

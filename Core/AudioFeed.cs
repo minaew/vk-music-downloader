@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-
 using MusicDownloader.Core.ResponcesTypes;
 
 namespace MusicDownloader.Core
@@ -52,7 +51,7 @@ namespace MusicDownloader.Core
         
         public DateTimeOffset Date { get; }
 
-        public ICollection<Audio> Audios { get; } = new List<Audio>();
+        public IList<Audio> Audios { get; } = new List<Audio>();
 
         public DirectoryInfo Location { get; }
 

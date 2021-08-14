@@ -4,6 +4,4 @@
     {
         public Error error { get; set; }
     }
-
-#pragma warning restore CA1812
 }

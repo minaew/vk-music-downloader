@@ -4,6 +4,4 @@
     {
         public T response { get; set; }
     }
-
-#pragma warning restore CA1812
 }
