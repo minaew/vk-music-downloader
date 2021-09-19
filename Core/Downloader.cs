@@ -16,7 +16,7 @@ namespace MusicDownloader.Core
             if (audioFeed.Status == CacheStatus.Downloaded && !force) return;
 
             // TODO: hz, some heuristic
-            var album = audioFeed.Text.Substring(0, 30).Replace("\n", "").Replace("\r", "").Trim();
+            var album = audioFeed.Text.Substring(0, 30).Replace("\n", "").Replace("\r", "").Replace("\"", "").Trim();
 
             // download audios
             var options = new ParallelOptions
@@ -29,7 +29,7 @@ namespace MusicDownloader.Core
                 var processInfo = new ProcessStartInfo
                 {
                     FileName = Settings.FfmpegPath,
-                    Arguments = $"-y -i {audio.url}" +
+                    Arguments = $"-y -i \"{audio.url}\"" +
                                 $" -metadata title=\"{audio.title}\"" +
                                 $" -metadata artist=\"{audio.artist}\"" +
                                 $" -metadata album=\"{album}\"" +
@@ -39,7 +39,14 @@ namespace MusicDownloader.Core
                 };
                 var process = Process.Start(processInfo);
                 process.StandardError.ReadToEndAsync()
-                    .ContinueWith(t => process.WaitForExit(), TaskScheduler.Current)
+                    .ContinueWith(t => 
+                    {
+                        process.WaitForExit();
+                        if (process.ExitCode != 0)
+                        {
+                            throw new Exception($"{processInfo.Arguments}: {t.Result}");
+                        }
+                    }, TaskScheduler.Current)
                     .Wait();
             });
 

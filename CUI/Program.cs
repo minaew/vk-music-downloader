@@ -12,6 +12,12 @@ namespace MusicDownloader.CUI
     {
         static void Main(string[] args)
         {
+            // using (var executor = new VkMethodExecutor(Logger.FileLogger.Default))
+            // {
+            //     executor.GetDialogAsync().Wait();
+            // }
+            // return;
+
             Parser.Default.ParseArguments<Options>(args)
                 .WithNotParsed(p => throw new ArgumentException("invalid"))
                 .WithParsedAsync(opt =>            

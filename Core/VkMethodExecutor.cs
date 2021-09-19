@@ -86,9 +86,22 @@ namespace MusicDownloader.Core
 
             var post = posts.SingleOrDefault();
             var audioFeed = await ProcessPostAsync(post);
-            Downloader.Download(audioFeed, true);
+            Downloader.Download(audioFeed);
             _logger.Log($"donloaded in {audioFeed.Location}");
             return audioFeed.Location.FullName;
+        }
+
+        public async Task GetDialogAsync()
+        {
+            var body = await ExecuteAsync<MessageHistory>("messages.getHistory", new Dictionary<string, string>
+            {
+                { "user_id", "9170005" }
+            });
+
+            foreach (var message in body.items)
+            {
+                Console.WriteLine($"{message.text.Substring(0, 10)}... {string.Join(',', message.attachments.Select(a => a.type))}");
+            }
         }
 
         #endregion
