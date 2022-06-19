@@ -27,5 +27,11 @@ namespace MusicDownloader.CUI
 
         [Option('p', "postId", HelpText = "Post identificator")]
         public int PostId { get; set; }
+
+        [Option('u', "userName")]
+        public string UserName { get; set; }
+
+        [Option('a', "password")]
+        public string Password { get; set; }
     }
 }

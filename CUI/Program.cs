@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using CommandLine;
 using MusicDownloader.Core;
@@ -30,6 +31,9 @@ namespace MusicDownloader.CUI
                         case "newsfeed":
                             return FromNewsFeedAsync(opt.Days, opt.Download, opt.IdsToExclude);
 
+                        case "auth":
+                            return AuthenticateAsync(opt.UserName, opt.Password);
+
                         default:
                             return Task.FromResult(0);
                     }
@@ -39,7 +43,7 @@ namespace MusicDownloader.CUI
 
         private static async Task FromPostAsync(int groupId, int postId)
         {
-            using (var executor = new VkMethodExecutor(FileLogger.Default))
+            using (var executor = new VkMethodExecutor(FileLogger.Default, new OfficialApp().UserAgent))
             {
                 // var path = await executor.DownloadAudioContenAsync(6827569, 38861);
                 var path = await executor.DownloadAudioContenAsync(groupId, postId);
@@ -60,7 +64,7 @@ namespace MusicDownloader.CUI
                 Console.WriteLine("Without download");
             }
 
-            using (var executor = new VkMethodExecutor(FileLogger.Default))
+            using (var executor = new VkMethodExecutor(FileLogger.Default, new OfficialApp().UserAgent))
             {
                 Console.WriteLine("Getting feeds ...");
                 await foreach (var feed in executor.GetFeedAsync(DateTime.Now - TimeSpan.FromDays(days),
@@ -88,6 +92,14 @@ namespace MusicDownloader.CUI
             }
 
             return;
+        }
+
+        private static async Task AuthenticateAsync(string userName, string password)
+        {
+            var authenticator = new OfficialApp();
+            var token = await authenticator.Authenticate(userName, password);
+            Directory.CreateDirectory(Path.GetDirectoryName(Settings.TokenPath));
+            File.WriteAllText(Settings.TokenPath, token);
         }
     }
 }

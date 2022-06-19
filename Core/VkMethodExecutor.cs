@@ -20,15 +20,9 @@ namespace MusicDownloader.Core
 
         #endregion
 
-        public VkMethodExecutor(ILogger logger)
+        public VkMethodExecutor(ILogger logger, string userAgent)
         {
-            string userAgent;
-            using (var file = new FileStream(Settings.TokenPath, FileMode.Open))
-            using (var stream = new StreamReader(file))
-            {
-                _token = stream.ReadLine();
-                userAgent = stream.ReadLine();
-            }
+            _token = File.ReadAllText(Settings.TokenPath);
 
             _logger = logger;
             _client = new HttpClient();
