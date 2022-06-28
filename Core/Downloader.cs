@@ -52,19 +52,9 @@ namespace MusicDownloader.Core
                                     $" -metadata track=\"{index + 1}\"" +
                                      " -c copy" +
                                     $" {tmpPath}",
-                        RedirectStandardError = true // чтобы не захламлять консоль
+                        RedirectStandardError = true
                     };
                     using (var process = Process.Start(processInfo))
-                    // process.StandardError.ReadToEndAsync()
-                    //     .ContinueWith(t => 
-                    //     {
-                    //         process.WaitForExit();
-                    //         if (process.ExitCode != 0)
-                    //         {
-                    //             throw new Exception($"{processInfo.Arguments}: {t.Result}");
-                    //         }
-                    //     }, TaskScheduler.Current)
-                    //     .Wait();
                     {
                         process.WaitForExit();
                     }
