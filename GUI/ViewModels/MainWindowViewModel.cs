@@ -49,7 +49,8 @@ namespace GUI.ViewModels
 
             this.RaisePropertyChanged(nameof(Feeds));
 #else
-            using (var executor = new VkMethodExecutor(FileLogger.Default, new OfficialApp().UserAgent))
+            var config = new OfficialApp();
+            using (var executor = new VkMethodExecutor(FileLogger.Default, config.UserAgent, config.ApiVersion))
             {
                 Feeds.Clear();
                 await foreach (var feed in executor.GetFeedAsync(Start, End))

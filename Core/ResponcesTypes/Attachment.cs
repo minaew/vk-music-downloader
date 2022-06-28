@@ -3,8 +3,12 @@
     internal class Attachment
     {
         public string type { get; set; }
+
+        // union-ish:
         public AudioPlaylist audio_playlist { get; set; }
+
         public Audio audio { get; set; }
-        // public WallPost
+
+        public Link link { get; set; }
     }
 }

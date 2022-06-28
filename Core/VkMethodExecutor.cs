@@ -16,17 +16,23 @@ namespace MusicDownloader.Core
 
         private readonly ILogger _logger;
         private readonly HttpClient _client;
-        private string _token;
+        private readonly string _token;
+        private readonly string _apiVersion;
 
         #endregion
 
-        public VkMethodExecutor(ILogger logger, string userAgent)
+        public VkMethodExecutor(ILogger logger, string userAgent, string apiVersion)
         {
             _token = File.ReadAllText(Settings.TokenPath);
 
             _logger = logger;
             _client = new HttpClient();
+
             _client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+            _client.DefaultRequestHeaders.Add("Host", "api.vk.com");
+            _client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+
+            _apiVersion = apiVersion;
         }
 
         #region Public
@@ -80,7 +86,7 @@ namespace MusicDownloader.Core
 
             var post = posts.SingleOrDefault();
             var audioFeed = await ProcessPostAsync(post);
-            Downloader.Download(audioFeed);
+            Downloader.Download(audioFeed, true);
             _logger.Log($"donloaded in {audioFeed.Location}");
             return audioFeed.Location.FullName;
         }
@@ -114,14 +120,37 @@ namespace MusicDownloader.Core
                         break;
                     
                     case "audio_playlist":
-                        var playList = await ExecuteAsync<ResponceCollection<Audio>>("audio.get", new Dictionary<string, string>
+                        var playList = await ExecuteAsync<ResponceCollection<Audio>>("audio.getPlaylistById", new Dictionary<string, string>
                         {
                             { "owner_id", att.audio_playlist.owner_id.ToString(CultureInfo.InvariantCulture) },
                             { "playlist_id", att.audio_playlist.id.ToString(CultureInfo.InvariantCulture) },
+                            // { "access_key", att.audio_playlist.access_key }
                         });
                         if (playList != null)
                         {
                             audios.AddRange(playList.items);
+                        }
+                        break;
+
+                    case "link":
+                        var act = UriHelper.GetParamValue(att.link.Url, "act");
+                        // var accessHash = UriHelper.GetParamValue(att.link.Url, "access_hash");
+                        if (act.StartsWith("audio_playlist"))
+                        {
+                            var ids = act.Substring("audio_playlist".Length).Split('_');
+
+                            var playListt = await ExecuteAsync<AudioPlaylist>("audio.getPlaylistById", new Dictionary<string, string>
+                            {
+                                { "owner_id", ids[0].ToString(CultureInfo.InvariantCulture) },
+                                { "playlist_id", ids[1].ToString(CultureInfo.InvariantCulture) }
+                            });
+
+                            var albumAudios = await ExecuteAsync<ResponceCollection<Audio>>("audio.get", new Dictionary<string, string>
+                            {
+                                { "album_id" , playListt.id .ToString()},
+                                { "owner_id" , playListt.owner_id.ToString() }
+                            });
+                            audios.AddRange(albumAudios.items);
                         }
                         break;
                 }
@@ -215,21 +244,11 @@ namespace MusicDownloader.Core
         
         private async Task<string> ExecuteAsync(string method, IDictionary<string, string> parameters)
         {
-            var requestUri = new Uri(
-                    "https://api.vk.com/method/" + method + "?" +
-                    string.Concat(parameters.Select(p => $"&{p.Key}={p.Value}")) +
-                    "&access_token=" + _token +
-                    // "&v=5.122"
-                    "&v=5.101"
-                );
+            var requestUri = $"https://api.vk.com/method/{method}?access_token={_token}" +
+                             string.Concat(parameters.Select(p => $"&{p.Key}={p.Value}")) +
+                             $"&v={_apiVersion}";
 
-            string body;
-            using (var message = new HttpRequestMessage(HttpMethod.Get, requestUri))
-            using (var response = await _client.SendAsync(message))
-            {
-                response.EnsureSuccessStatusCode();
-                body = await response.Content.ReadAsStringAsync();
-            }
+            var body = await _client.GetStringAsync(requestUri);
 
             var error = JsonSerializer.Deserialize<ErrorResponce>(body);
             if (error.error != null)

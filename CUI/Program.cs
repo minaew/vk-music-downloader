@@ -11,16 +11,9 @@ namespace MusicDownloader.CUI
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            // using (var executor = new VkMethodExecutor(Logger.FileLogger.Default))
-            // {
-            //     executor.GetDialogAsync().Wait();
-            // }
-            // return;
-
-            Parser.Default.ParseArguments<Options>(args)
-                .WithNotParsed(p => throw new ArgumentException("invalid"))
+            var result = Parser.Default.ParseArguments<Options>(args)
                 .WithParsedAsync(opt =>            
                 {
                     switch (opt.Mode)
@@ -35,15 +28,19 @@ namespace MusicDownloader.CUI
                             return AuthenticateAsync(opt.UserName, opt.Password);
 
                         default:
+                            Console.WriteLine("nothing done");
                             return Task.FromResult(0);
                     }
                 })
-                .Wait();
+                .Result;
+
+                return result.Tag == ParserResultType.Parsed ? 0 : -1;
         }
 
         private static async Task FromPostAsync(int groupId, int postId)
         {
-            using (var executor = new VkMethodExecutor(FileLogger.Default, new OfficialApp().UserAgent))
+            var config = new OfficialApp();
+            using (var executor = new VkMethodExecutor(FileLogger.Default, config.UserAgent, config.ApiVersion))
             {
                 // var path = await executor.DownloadAudioContenAsync(6827569, 38861);
                 var path = await executor.DownloadAudioContenAsync(groupId, postId);
@@ -64,7 +61,8 @@ namespace MusicDownloader.CUI
                 Console.WriteLine("Without download");
             }
 
-            using (var executor = new VkMethodExecutor(FileLogger.Default, new OfficialApp().UserAgent))
+            var config = new OfficialApp();
+            using (var executor = new VkMethodExecutor(FileLogger.Default, config.UserAgent, config.ApiVersion))
             {
                 Console.WriteLine("Getting feeds ...");
                 await foreach (var feed in executor.GetFeedAsync(DateTime.Now - TimeSpan.FromDays(days),
