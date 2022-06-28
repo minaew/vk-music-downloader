@@ -85,30 +85,17 @@ namespace MusicDownloader.Core
             });
 
             var post = posts.SingleOrDefault();
-            var audioFeed = await ProcessPostAsync(post);
+            var audioFeed = await GetAudioFeedAsync(post);
             Downloader.Download(audioFeed, true);
             _logger.Log($"donloaded in {audioFeed.Location}");
             return audioFeed.Location.FullName;
-        }
-
-        public async Task GetDialogAsync()
-        {
-            var body = await ExecuteAsync<MessageHistory>("messages.getHistory", new Dictionary<string, string>
-            {
-                { "user_id", "9170005" }
-            });
-
-            foreach (var message in body.items)
-            {
-                Console.WriteLine($"{message.text.Substring(0, 10)}... {string.Join(',', message.attachments.Select(a => a.type))}");
-            }
         }
 
         #endregion
 
         #region Private
 
-        private async Task<AudioFeed> ProcessPostAsync(WallPost post)
+        private async Task<AudioFeed> GetAudioFeedAsync(WallPost post)
         {
             var audios = new List<Audio>();
             foreach (var att in post.attachments)
@@ -120,37 +107,17 @@ namespace MusicDownloader.Core
                         break;
                     
                     case "audio_playlist":
-                        var playList = await ExecuteAsync<ResponceCollection<Audio>>("audio.getPlaylistById", new Dictionary<string, string>
-                        {
-                            { "owner_id", att.audio_playlist.owner_id.ToString(CultureInfo.InvariantCulture) },
-                            { "playlist_id", att.audio_playlist.id.ToString(CultureInfo.InvariantCulture) },
-                            // { "access_key", att.audio_playlist.access_key }
-                        });
-                        if (playList != null)
-                        {
-                            audios.AddRange(playList.items);
-                        }
+                        var albumAudios = await GetAudiosAsync(att.audio_playlist.owner_id, att.audio_playlist.id);
+                        audios.AddRange(albumAudios);
                         break;
 
                     case "link":
                         var act = UriHelper.GetParamValue(att.link.Url, "act");
-                        // var accessHash = UriHelper.GetParamValue(att.link.Url, "access_hash");
                         if (act.StartsWith("audio_playlist"))
                         {
-                            var ids = act.Substring("audio_playlist".Length).Split('_');
-
-                            var playListt = await ExecuteAsync<AudioPlaylist>("audio.getPlaylistById", new Dictionary<string, string>
-                            {
-                                { "owner_id", ids[0].ToString(CultureInfo.InvariantCulture) },
-                                { "playlist_id", ids[1].ToString(CultureInfo.InvariantCulture) }
-                            });
-
-                            var albumAudios = await ExecuteAsync<ResponceCollection<Audio>>("audio.get", new Dictionary<string, string>
-                            {
-                                { "album_id" , playListt.id .ToString()},
-                                { "owner_id" , playListt.owner_id.ToString() }
-                            });
-                            audios.AddRange(albumAudios.items);
+                            var ids = act.Substring("audio_playlist".Length).Split('_').Select(int.Parse).ToList();
+                            var linkAudios = await GetAudiosAsync(ids[0], ids[1]);
+                            audios.AddRange(linkAudios);
                         }
                         break;
                 }
@@ -231,6 +198,23 @@ namespace MusicDownloader.Core
             return new PartialFeed(feeds, newsFeed.next_from);
         }
 
+        private async Task<IReadOnlyCollection<Audio>> GetAudiosAsync(int ownerId, int playlistId)
+        {
+            var playList = await ExecuteAsync<AudioPlaylist>("audio.getPlaylistById", new Dictionary<string, string>
+            {
+                { "owner_id", $"{ownerId}" },
+                { "playlist_id", $"{playlistId}" }
+            });
+
+            var audios = await ExecuteAsync<ResponceCollection<Audio>>("audio.get", new Dictionary<string, string>
+            {
+                { "album_id" , $"{playList.id}" },
+                { "owner_id" , $"{playList.owner_id}" }
+            });
+
+            return audios.items;
+        }
+        
         private async Task<T> ExecuteAsync<T>(string method, IDictionary<string, string> parameters)
         {
             var body = await ExecuteAsync(method, parameters);
