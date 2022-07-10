@@ -11,22 +11,6 @@ namespace MusicDownloader.Core
 
         public static string TokenPath { get; } = Path.Combine(ApplicationFolder, "android-token.txt");
 
-        public static string FfmpegPath
-        {
-            get
-            {
-                switch (Environment.OSVersion.Platform)
-                {
-                    case PlatformID.Win32NT:
-                        return @"F:\Fracture\Development\sources\vk\ffmpeg-4.3.1-2020-10-01-full_build\bin\ffmpeg.exe";
-
-                    case PlatformID.Unix:
-                        return "ffmpeg";
-
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
-        }
+        public static string Id3Man { get; } = "ID3Man";
     }
 }

@@ -49,7 +49,7 @@ namespace GUI.ViewModels
 
             this.RaisePropertyChanged(nameof(Feeds));
 #else
-            var config = new OfficialApp();
+            var config = new VkApplication();
             using (var executor = new VkMethodExecutor(FileLogger.Default, config.UserAgent, config.ApiVersion))
             {
                 Feeds.Clear();

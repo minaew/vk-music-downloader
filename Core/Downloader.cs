@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -42,49 +43,43 @@ namespace MusicDownloader.Core
                     // set metadata
                     var tmpPath = Path.Combine(Path.GetDirectoryName(audio.Path),
                                                $"tmp-{Path.GetFileName(audio.Path)}");
-                    var processInfo = new ProcessStartInfo
+                    foreach (var frame in new Dictionary<string, string>
                     {
-                        FileName = Settings.FfmpegPath,
-                        Arguments = $"-y -i \"{audio.Path}\"" +
-                                    $" -metadata title=\"{audio.title}\"" +
-                                    $" -metadata artist=\"{audio.artist}\"" +
-                                    $" -metadata album=\"{album}\"" +
-                                    $" -metadata track=\"{index + 1}\"" +
-                                     " -c copy" +
-                                    $" {tmpPath}",
-                        RedirectStandardError = true
-                    };
-                    using (var process = Process.Start(processInfo))
+                        { "title",     audio.title    },
+                        { "performer", audio.artist   },
+                        { "album",     album          },
+                        { "track",     $"{index + 1}" },
+                    })
                     {
-                        process.WaitForExit();
-                    }
-                    File.Delete(audio.Path);
-                    File.Move(tmpPath, audio.Path);
-                }
-                else
-                {
-                    var processInfo = new ProcessStartInfo
-                    {
-                        FileName = Settings.FfmpegPath,
-                        Arguments = $"-y -i \"{audio.url}\"" +
-                                    $" -metadata title=\"{audio.title}\"" +
-                                    $" -metadata artist=\"{audio.artist}\"" +
-                                    $" -metadata album=\"{album}\"" +
-                                    $" -metadata track=\"{index + 1}\"" +
-                                    $" {audio.Path}",
-                        RedirectStandardError = true // чтобы не захламлять консоль
-                    };
-                    var process = Process.Start(processInfo);
-                    process.StandardError.ReadToEndAsync()
-                        .ContinueWith(t => 
+                        var dir = Directory.GetCurrentDirectory();
+                        var processInfo = new ProcessStartInfo
+                        {
+                            FileName = Settings.Id3Man,
+                            RedirectStandardError = true,
+                            RedirectStandardOutput = true,
+                        };
+                        processInfo.ArgumentList.Add(audio.Path);
+                        processInfo.ArgumentList.Add(frame.Key);
+                        processInfo.ArgumentList.Add(frame.Value);
+                        processInfo.ArgumentList.Add(tmpPath);
+
+                        using (var process = Process.Start(processInfo))
                         {
                             process.WaitForExit();
                             if (process.ExitCode != 0)
                             {
-                                throw new Exception($"{processInfo.Arguments}: {t.Result}");
+                                var error = process.StandardError.ReadToEndAsync();
+                                var output = process.StandardError.ReadToEndAsync();
+                                Task.WaitAll(error, output);
+                                throw new InvalidOperationException($"error running external process: {error.Result}, output: {output.Result}");
                             }
-                        }, TaskScheduler.Current)
-                        .Wait();
+                        }
+                        File.Move(tmpPath, audio.Path, true);
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException($"unsupported url {audio.url}");
                 }
             });
 

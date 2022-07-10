@@ -39,7 +39,7 @@ namespace MusicDownloader.CUI
 
         private static async Task FromPostAsync(int groupId, int postId)
         {
-            var config = new OfficialApp();
+            var config = new VkApplication();
             using (var executor = new VkMethodExecutor(FileLogger.Default, config.UserAgent, config.ApiVersion))
             {
                 // var path = await executor.DownloadAudioContenAsync(6827569, 38861);
@@ -61,7 +61,7 @@ namespace MusicDownloader.CUI
                 Console.WriteLine("Without download");
             }
 
-            var config = new OfficialApp();
+            var config = new VkApplication();
             using (var executor = new VkMethodExecutor(FileLogger.Default, config.UserAgent, config.ApiVersion))
             {
                 Console.WriteLine("Getting feeds ...");
@@ -94,7 +94,7 @@ namespace MusicDownloader.CUI
 
         private static async Task AuthenticateAsync(string userName, string password)
         {
-            var authenticator = new OfficialApp();
+            var authenticator = new VkApplication();
             var token = await authenticator.Authenticate(userName, password);
             Directory.CreateDirectory(Path.GetDirectoryName(Settings.TokenPath));
             File.WriteAllText(Settings.TokenPath, token);

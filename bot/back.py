@@ -11,6 +11,7 @@ def sendRequest(method, params = {}):
     assert responce['ok'] == True
     return responce['result']
 
+
 def parseText(text):
     if text.startswith('https://vk.com/wall-'):
         substr = text[len('https://vk.com/wall-'):len(text)]
@@ -23,22 +24,29 @@ def parseText(text):
         return process.stdout.decode().splitlines()[0]
     return ''
 
+
 def getTitle(filePath):
-    ffmpeg = subprocess.Popen(['ffmpeg', '-i', filePath, '-f', 'ffmetadata'], stderr=subprocess.PIPE)
-    grep = subprocess.Popen(['grep', 'title'], stdin=ffmpeg.stderr, stdout=subprocess.PIPE)
-    ffmpeg.stderr.close()
-    output = grep.communicate()[0].decode()
-    s = output.split(':')
-    assert len(s) == 2
-    return s[1].lstrip().splitlines()[0]
+    popen = subprocess.Popen([id3man, filePath, 'title'], stdout=subprocess.PIPE)
+    title = popen.stdout.readline().decode()[:-1]
+    return title
 
 
 with open('config.json', 'r') as file:
     content = file.read()
     config = json.loads(content)
+
     cui = config['cui']
+    dirname = os.path.dirname(__file__)
+    cui = os.path.join(dirname, cui)
+
+    id3man = config['id3man']
+    dirname = os.path.dirname(__file__)
+    id3man = os.path.join(dirname, id3man)
+
     token = config['token']
+
     check_interval = config['check_interval']
+
     done_id_file_path = config['done_id_file_path']
 
 while True:
