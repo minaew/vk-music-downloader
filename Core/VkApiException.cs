@@ -5,12 +5,6 @@ namespace MusicDownloader.Core
 {
     public class VkApiException : Exception
     {
-        public VkApiException(int code, IReadOnlyDictionary<string, string> parameters)
-        {
-            Code = code;
-            Parameters = parameters;
-        }
-
         public VkApiException()
         {
         }
@@ -23,8 +17,8 @@ namespace MusicDownloader.Core
         {
         }
 
-        public int Code { get; }
+        public int Code { get; set; }
         
-        public IReadOnlyDictionary<string, string> Parameters { get; }
+        public IReadOnlyDictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
     }
 }

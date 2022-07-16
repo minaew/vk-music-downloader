@@ -247,10 +247,6 @@ namespace MusicDownloader.Core
                         _logger.Log("error 15: " + string.Join(',', error.error.request_params.Select(p => $"{p.key}:{p.value}")));
                         return null;
 
-                    case 201: // captcha
-                        _logger.Log("error 201");
-                        return null;
-
                     case 14: // captcha
                         _logger.Log("error 14");
                         return null;
