@@ -11,7 +11,11 @@ namespace MusicDownloader.Core.ResponcesTypes
 
         public VkApiException ToException()
         {
-            return new VkApiException(error_code, request_params.ToDictionary(p => p.key, p => p.value));
+            return new VkApiException(error_msg)
+            {
+                Code = error_code,
+                Parameters = request_params.ToDictionary(p => p.key, p => p.value)
+            };
         }
     }
 }
