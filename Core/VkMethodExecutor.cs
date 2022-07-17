@@ -62,7 +62,7 @@ namespace MusicDownloader.Core
 
                 foreach (var feed in part)
                 {
-                    if (excludeSources?.Contains(feed.Source.Id) ?? false)
+                    if (excludeSources?.Contains(feed.Source.id) ?? false)
                     {
                         continue;
                     }
@@ -112,7 +112,7 @@ namespace MusicDownloader.Core
                         break;
 
                     case "link":
-                        var act = UriHelper.GetParamValue(att.link.Url, "act");
+                        var act = UriHelper.GetParamValue(att.link.url, "act");
                         if (act.StartsWith("audio_playlist"))
                         {
                             var ids = act.Substring("audio_playlist".Length).Split('_').Select(int.Parse).ToList();
@@ -123,7 +123,7 @@ namespace MusicDownloader.Core
                 }
             }
 
-            var group = new Group() { Id = -post.owner_id };
+            var group = new Group() { id = -post.owner_id };
             var date = DateTimeOffset.FromUnixTimeSeconds(post.date).ToOffset(new TimeSpan(3, 0, 0));
             return new AudioFeed(post.id, group, date, audios)
             {
@@ -155,7 +155,7 @@ namespace MusicDownloader.Core
             {
                 if (item.source_id > 0) continue; // not a group
                 
-                var group = newsFeed.groups.SingleOrDefault(g => g.Id == - item.source_id);
+                var group = newsFeed.groups.SingleOrDefault(g => g.id == - item.source_id);
                 if (group == null) continue; // unknown group
 
                 await DownloadOrSetPhotoAsync(group);
@@ -263,14 +263,14 @@ namespace MusicDownloader.Core
         {
             var groupsCache = Path.Combine(Settings.ApplicationFolder, "groups");
 
-            var extension = group.Photo50?.Split('?')[0].Split('.').LastOrDefault();
-            group.Photo = Path.Combine(groupsCache, $"{group.Id}_50.{extension}");
+            var extension = group.photo_50?.Split('?')[0].Split('.').LastOrDefault();
+            group.Photo = Path.Combine(groupsCache, $"{group.id}_50.{extension}");
             if (File.Exists(group.Photo))
             {
                 return;
             }
 
-            var imageBytes = await _client.GetByteArrayAsync(new Uri(group.Photo200));
+            var imageBytes = await _client.GetByteArrayAsync(new Uri(group.photo_200));
 
             Directory.CreateDirectory(groupsCache);
             await File.WriteAllBytesAsync(group.Photo, imageBytes);

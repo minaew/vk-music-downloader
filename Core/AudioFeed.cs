@@ -19,7 +19,7 @@ namespace MusicDownloader.Core
 
             Location = Directory.CreateDirectory(Path.Combine(Settings.ApplicationFolder,
                                                               "cache",
-                                                              Source.Id.ToString(CultureInfo.InvariantCulture),
+                                                              Source.id.ToString(CultureInfo.InvariantCulture),
                                                               Id.ToString(CultureInfo.InvariantCulture)));
 
             if (audios != null)
@@ -74,7 +74,7 @@ namespace MusicDownloader.Core
                 return false;
             }
 
-            return x.Id == y.Id && x.Source.Id == y.Source.Id;
+            return x.Id == y.Id && x.Source.id == y.Source.id;
         }
 
         public int GetHashCode(AudioFeed obj)
@@ -84,7 +84,7 @@ namespace MusicDownloader.Core
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            return obj.Id.GetHashCode() ^ obj.Source.Id.GetHashCode();
+            return obj.Id.GetHashCode() ^ obj.Source.id.GetHashCode();
         }
     }
 }
