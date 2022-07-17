@@ -70,8 +70,8 @@ namespace MusicDownloader.CUI
                                                                 idsToExclude))
                 {
                     Console.Write($"{feed.Status}\t{feed.Date}\t{feed.Id}\t{feed.Audios.Count}\t");
-                    Console.Write($"{feed.Source.Id}".PadRight(10));
-                    Console.WriteLine($"\t{feed.Source.Name}");
+                    Console.Write($"{feed.Source.id}".PadRight(10));
+                    Console.WriteLine($"\t{feed.Source.name}");
                     // post content
                     //foreach (var audio in feed.Audios)
                     //{

@@ -6,20 +6,15 @@ namespace MusicDownloader.Core.ResponcesTypes
     [DebuggerDisplay("{name}")]
     public class Group
     {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public int id { get; set; }
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string name { get; set; }
 
-        [JsonPropertyName("photo_50")]
-        public string Photo50 { get; set; }
+        public string photo_50 { get; set; }
 
-        [JsonPropertyName("photo_100")]
-        public string Photo100 { get; set; }
+        public string photo_100 { get; set; }
 
-        [JsonPropertyName("photo_200")]
-        public string Photo200 { get; set; }
+        public string photo_200 { get; set; }
 
         [JsonIgnore]
         public string Photo { get; set; }
